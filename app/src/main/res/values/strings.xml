@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">My Application</string>
+    
+    <!-- Permission strings -->
+    <string name="permission_title">Permission Required</string>
+    <string name="permission_audio">Audio recording permission denied</string>
+    <string name="permission_ext_storage">External storage permission denied</string>
+    <string name="permission_network">Network permission denied</string>
+    <string name="permission_camera">Camera permission denied</string>
+    
+    <!-- Permission request strings -->
+    <string name="permission_ext_storage_request">This app needs external storage access to save recordings</string>
+    <string name="permission_audio_recording_request">This app needs microphone access for audio recording</string>
+    <string name="permission_network_request">This app needs network access</string>
+    <string name="permission_camera_request">This app needs camera access</string>
+    
+    <!-- USB Camera strings -->
+    <string name="select">Select Camera</string>
+    <string name="refresh">Refresh</string>
+</resources>

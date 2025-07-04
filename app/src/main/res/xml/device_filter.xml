@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- USB Video Class devices -->
+    <usb-device class="14" subclass="1" protocol="0" />
+    <usb-device class="14" subclass="2" protocol="0" />
+    
+    <!-- Some common UVC camera vendor IDs (you can add more specific ones if needed) -->
+    <usb-device vendor-id="1133" />  <!-- Logitech -->
+    <usb-device vendor-id="0461" />  <!-- Philips -->
+    <usb-device vendor-id="046d" />  <!-- Logitech -->
+    <usb-device vendor-id="04f2" />  <!-- Chicony -->
+    <usb-device vendor-id="05a9" />  <!-- OmniVision -->
+    <usb-device vendor-id="058f" />  <!-- Alcor Micro -->
+    <usb-device vendor-id="0ac8" />  <!-- Z-Star -->
+    <usb-device vendor-id="1e4e" />  <!-- Cubeternet -->
+</resources> 
