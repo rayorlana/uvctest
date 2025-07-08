@@ -30,13 +30,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-    
-    // Disable NDK build - using precompiled libraries from jniLibs
-    // externalNativeBuild {
-    //     ndkBuild {
-    //         path 'src/main/jni/Android.mk'
-    //     }
-    // }
 }
 
 dependencies {
