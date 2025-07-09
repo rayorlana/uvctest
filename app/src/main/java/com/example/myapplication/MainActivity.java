@@ -2,14 +2,14 @@ package com.example.myapplication;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
-import android.view.TextureView;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,14 +27,15 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements 
     USBMonitor.OnDeviceConnectListener,
-    TextureView.SurfaceTextureListener {
+    SurfaceHolder.Callback {
 
     private static final boolean DEBUG = true;	// TODO set false on production
     private static final String TAG = "MainActivity";
     
     // UI Components
     private TextView mStatusText;
-    private TextureView mCameraView;
+    private SurfaceView mCameraView;
+    private SurfaceHolder mSurfaceHolder;
     private Button mBtnScan;
     private Button mBtnConnect;
     private Button mBtnStartPreview;
@@ -86,8 +87,9 @@ public class MainActivity extends AppCompatActivity implements
             showToast("Camera native libraries not found");
         }
         
-        // Set up camera view listener
-        mCameraView.setSurfaceTextureListener(this);
+        // Set up camera view surface
+        mSurfaceHolder = mCameraView.getHolder();
+        mSurfaceHolder.addCallback(this);
         
         // Set up button listeners
         setupButtonListeners();
@@ -261,20 +263,13 @@ public class MainActivity extends AppCompatActivity implements
                 // Small delay to ensure clean state
                 Thread.sleep(200);
                 
-                // Check if TextureView surface is available
-                if (mCameraView.isAvailable()) {
-                    SurfaceTexture surfaceTexture = mCameraView.getSurfaceTexture();
-                    if (surfaceTexture != null) {
-                        Log.d(TAG, "Setting preview surface before starting preview");
-                        mUVCCamera.setPreviewDisplay(new Surface(surfaceTexture));
-                    } else {
-                        Log.e(TAG, "SurfaceTexture is null!");
-                        showToast("Camera surface not ready. Try again.");
-                        return;
-                    }
+                // Check if SurfaceView surface is available
+                if (mSurfaceHolder != null && mSurfaceHolder.getSurface() != null && mSurfaceHolder.getSurface().isValid()) {
+                    Log.d(TAG, "Setting preview surface before starting preview");
+                    mUVCCamera.setPreviewDisplay(mSurfaceHolder);
                 } else {
-                    Log.e(TAG, "TextureView surface not available!");
-                    showToast("Camera surface not ready. Try again in a moment.");
+                    Log.e(TAG, "SurfaceHolder is null or surface not valid!");
+                    showToast("Camera surface not ready. Try again.");
                     return;
                 }
                 
@@ -476,15 +471,12 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    // TextureView.SurfaceTextureListener implementation
+    // SurfaceHolder.Callback implementation
     @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG, "=== Surface texture available: " + width + "x" + height + " ===");
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.d(TAG, "=== Surface created ===");
         Log.d(TAG, "Camera connected: " + mCameraConnected);
         Log.d(TAG, "UVCCamera ready: " + (mUVCCamera != null));
-        
-        // Apply mirroring transformation for natural camera behavior
-        applyCameraMirroring(width, height);
         
         // Don't set preview display here - do it in startPreview() instead
         // This ensures proper timing and error handling
@@ -494,11 +486,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG, "Surface texture size changed: " + width + "x" + height);
-        
-        // Reapply mirroring transformation for new size
-        applyCameraMirroring(width, height);
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Log.d(TAG, "Surface changed: " + width + "x" + height + ", format: " + format);
         
         // If preview is running, we might need to restart it with new size
         if (mUVCCamera != null && mCameraConnected) {
@@ -507,8 +496,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.d(TAG, "Surface texture destroyed - stopping preview");
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d(TAG, "Surface destroyed - stopping preview");
         if (mUVCCamera != null) {
             try {
                 mUVCCamera.stopPreview();
@@ -517,12 +506,6 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Error stopping preview on surface destroy: " + e.getMessage());
             }
         }
-        return true;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        // Called for each frame - don't log here to avoid spam
     }
     
     // Helper method to check if UVCCamera is properly initialized
@@ -638,20 +621,5 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
     
-    // Helper method to apply horizontal mirroring to the camera preview
-    private void applyCameraMirroring(int width, int height) {
-        Matrix matrix = new Matrix();
-        
-        // Calculate the center point for scaling
-        float centerX = width / 2.0f;
-        float centerY = height / 2.0f;
-        
-        // Apply horizontal flip (mirror effect)
-        matrix.postScale(-1.0f, 1.0f, centerX, centerY);
-        
-        // Apply the transformation to the TextureView
-        mCameraView.setTransform(matrix);
-        
-        Log.d(TAG, "Applied camera mirroring transformation for size: " + width + "x" + height);
-    }
+
 }
